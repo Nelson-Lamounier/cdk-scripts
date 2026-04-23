@@ -1,0 +1,59 @@
+{
+  "name": "@nelson-lamounier/cdk-deploy-scripts",
+  "version": "1.0.0",
+  "description": "CDK CI/CD deployment scripts — deploy, diagnose, finalize, synthesize",
+  "license": "MIT",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "cdk-deploy": "bin/cdk-deploy.js",
+    "cdk-diagnose": "bin/cdk-diagnose.js",
+    "cdk-finalize": "bin/cdk-finalize.js",
+    "cdk-synthesize": "bin/cdk-synthesize.js"
+  },
+  "exports": {
+    ".":           { "require": "./dist/index.js",        "types": "./dist/index.d.ts" },
+    "./stacks.js": { "require": "./dist/stacks.js",       "types": "./dist/stacks.d.ts" },
+    "./github.js": { "require": "./dist/github.js",       "types": "./dist/github.d.ts" },
+    "./logger.js": { "require": "./dist/logger.js",       "types": "./dist/logger.d.ts" },
+    "./cdk.js":    { "require": "./dist/cdk.js",          "types": "./dist/cdk.d.ts" },
+    "./paths.js":  { "require": "./dist/paths.js",        "types": "./dist/paths.d.ts" },
+    "./aws.js":    { "require": "./dist/aws.js",          "types": "./dist/aws.d.ts" },
+    "./exec.js":   { "require": "./dist/exec.js",         "types": "./dist/exec.d.ts" },
+    "./types.js":  { "require": "./dist/types.js",        "types": "./dist/types.d.ts" }
+  },
+  "files": ["dist", "bin"],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "dependencies": {
+    "@aws-sdk/client-auto-scaling": "^3.0.0",
+    "@aws-sdk/client-cloudformation": "^3.0.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.0.0",
+    "@aws-sdk/client-ec2": "^3.0.0",
+    "@aws-sdk/client-route-53": "^3.0.0",
+    "@aws-sdk/client-s3": "^3.0.0",
+    "@aws-sdk/client-secrets-manager": "^3.0.0",
+    "@aws-sdk/client-sfn": "^3.0.0",
+    "@aws-sdk/client-ssm": "^3.0.0",
+    "@aws-sdk/client-sts": "^3.0.0",
+    "@aws-sdk/credential-providers": "^3.0.0",
+    "@aws-sdk/types": "^3.0.0",
+    "chalk": "^4.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
