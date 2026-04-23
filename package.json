@@ -10,7 +10,14 @@
     "cdk-deploy": "bin/cdk-deploy.js",
     "cdk-diagnose": "bin/cdk-diagnose.js",
     "cdk-finalize": "bin/cdk-finalize.js",
-    "cdk-synthesize": "bin/cdk-synthesize.js"
+    "cdk-synthesize": "bin/cdk-synthesize.js",
+    "cdk-pipeline-setup": "bin/cdk-pipeline-setup.js",
+    "cdk-preflight": "bin/cdk-preflight.js",
+    "cdk-cfn-rescue": "bin/cdk-cfn-rescue.js",
+    "cdk-drift": "bin/cdk-drift.js",
+    "cdk-log-audit": "bin/cdk-log-audit.js",
+    "cdk-security-scan": "bin/cdk-security-scan.js",
+    "cdk-failure-report": "bin/cdk-failure-report.js"
   },
   "exports": {
     ".":           { "require": "./dist/index.js",        "types": "./dist/index.d.ts" },
