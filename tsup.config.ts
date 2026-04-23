@@ -25,6 +25,8 @@ export default defineConfig({
     'ci/preflight-checks': 'src/ci/preflight-checks.ts',
     'ci/security-scan': 'src/ci/security-scan.ts',
     'ci/synthesize': 'src/ci/synthesize.ts',
+    // Shared utilities consumers can import directly
+    'shared/exec': 'src/shared/exec.ts',
   },
   format: ['cjs'],
   target: 'node22',
