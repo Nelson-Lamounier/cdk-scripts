@@ -25,7 +25,7 @@ import { setOutput } from '../utils/github.js';
 import logger from '../utils/logger.js';
 
 import { buildCdkArgs, runCdk, getCdkProjectRoot } from '../shared/exec.js';
-import { getProject, projectsMap, type Environment } from '../utils/stacks.js';
+import { getProject as _getProject, projectsMap, type ProjectConfig, type Environment } from '../utils/stacks.js';
 
 // ---------------------------------------------------------------------------
 // CLI argument parsing
@@ -52,22 +52,56 @@ if (!projectId || !environment) {
 // Main
 // ---------------------------------------------------------------------------
 async function main(): Promise<void> {
-  const stacksConfigPath =
-    process.env.CDK_STACKS_CONFIG ??
-    require('path').join(process.cwd(), 'scripts', 'shared', 'stacks.js');
-  try {
-    require(stacksConfigPath);
-  } catch {
-    // stacks config required — will fail below on getProject() if absent
+  // Resolve stacks config: explicit env var wins; otherwise probe candidate
+  // paths so the binary works across both flat repos (scripts/ at root) and
+  // monorepos (scripts/ nested inside infra/).  Compiled dist/ paths are
+  // preferred; raw .js source paths act as fallbacks.
+  const cwd = process.cwd();
+  const stacksCandidates: string[] = process.env.CDK_STACKS_CONFIG
+    ? [process.env.CDK_STACKS_CONFIG]
+    : [
+        // Flat repo — CWD is repo root, scripts workspace compiles to scripts/dist/
+        join(cwd, 'scripts', 'dist', 'shared', 'stacks.js'),
+        // Flat repo — CWD is repo root, top-level dist/ (alternative layout)
+        join(cwd, 'dist', 'scripts', 'shared', 'stacks.js'),
+        // Flat repo — CWD is repo root, raw source .js alongside .ts
+        join(cwd, 'scripts', 'shared', 'stacks.js'),
+        // Monorepo — CWD is repo root, CDK project lives in infra/
+        join(cwd, 'infra', 'dist', 'scripts', 'shared', 'stacks.js'),
+        join(cwd, 'infra', 'scripts', 'shared', 'stacks.js'),
+        // Running from inside the CDK project dir (e.g. cd infra && just …)
+        join(cwd, '..', 'scripts', 'dist', 'shared', 'stacks.js'),
+        join(cwd, '..', 'dist', 'scripts', 'shared', 'stacks.js'),
+        join(cwd, '..', 'scripts', 'shared', 'stacks.js'),
+      ];
+
+  // Use getProject from the required stacks module so both sides share the
+  // same projectsMap (the bundled copy is a separate tsup closure).
+  let getProject = _getProject;
+  let resolvedPath: string | undefined;
+  for (const candidate of stacksCandidates) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const mod = require(candidate) as { getProject?: (id: string) => ProjectConfig | undefined };
+      if (typeof mod.getProject === 'function') getProject = mod.getProject;
+      resolvedPath = candidate;
+      break;
+    } catch {
+      // try next candidate
+    }
   }
 
   const project = getProject(projectId);
   if (!project) {
+    const tried = stacksCandidates.map((p) => `  ${p}`).join('\n');
     console.error(
-      `Unknown project: ${projectId}. Ensure CDK_STACKS_CONFIG is set or scripts/shared/stacks.js exists.`,
+      `Unknown project: ${projectId}.\n` +
+      `Tried stacks config paths:\n${tried}\n` +
+      `Set CDK_STACKS_CONFIG to override, or ensure the stacks file is compiled.`,
     );
     process.exit(1);
   }
+  if (resolvedPath) logger.debug(`Stacks config: ${resolvedPath}`);
 
   logger.setEnvironment(environment);
   logger.header(`Synthesize ${project.name} (${environment})`);

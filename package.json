@@ -1,6 +1,6 @@
 {
   "name": "@nelsonlamounier/cdk-deploy-scripts",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CDK CI/CD deployment scripts — deploy, diagnose, finalize, synthesize",
   "license": "MIT",
   "type": "commonjs",
@@ -20,18 +20,51 @@
     "cdk-failure-report": "bin/cdk-failure-report.js"
   },
   "exports": {
-    ".":           { "require": "./dist/index.js",        "types": "./dist/index.d.ts" },
-    "./stacks.js": { "require": "./dist/stacks.js",       "types": "./dist/stacks.d.ts" },
-    "./github.js": { "require": "./dist/github.js",       "types": "./dist/github.d.ts" },
-    "./logger.js": { "require": "./dist/logger.js",       "types": "./dist/logger.d.ts" },
-    "./cdk.js":    { "require": "./dist/cdk.js",          "types": "./dist/cdk.d.ts" },
-    "./paths.js":  { "require": "./dist/paths.js",        "types": "./dist/paths.d.ts" },
-    "./aws.js":    { "require": "./dist/aws.js",          "types": "./dist/aws.d.ts" },
-    "./exec.js":   { "require": "./dist/exec.js",         "types": "./dist/exec.d.ts" },
-    "./types.js":  { "require": "./dist/types.js",        "types": "./dist/types.d.ts" },
-    "./shared/exec.js": { "require": "./dist/shared/exec.js", "types": "./dist/shared/exec.d.ts" }
+    ".": {
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./stacks.js": {
+      "require": "./dist/stacks.js",
+      "types": "./dist/stacks.d.ts"
+    },
+    "./github.js": {
+      "require": "./dist/github.js",
+      "types": "./dist/github.d.ts"
+    },
+    "./logger.js": {
+      "require": "./dist/logger.js",
+      "types": "./dist/logger.d.ts"
+    },
+    "./cdk.js": {
+      "require": "./dist/cdk.js",
+      "types": "./dist/cdk.d.ts"
+    },
+    "./paths.js": {
+      "require": "./dist/paths.js",
+      "types": "./dist/paths.d.ts"
+    },
+    "./aws.js": {
+      "require": "./dist/aws.js",
+      "types": "./dist/aws.d.ts"
+    },
+    "./exec.js": {
+      "require": "./dist/exec.js",
+      "types": "./dist/exec.d.ts"
+    },
+    "./types.js": {
+      "require": "./dist/types.js",
+      "types": "./dist/types.d.ts"
+    },
+    "./shared/exec.js": {
+      "require": "./dist/shared/exec.js",
+      "types": "./dist/shared/exec.d.ts"
+    }
   },
-  "files": ["dist", "bin"],
+  "files": [
+    "dist",
+    "bin"
+  ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
