@@ -415,7 +415,25 @@ async function runPipelineSummary(): Promise<void> {
     process.exit(1);
   }
 
-  const _project = getProject(projectId);
+  // tsup bundles stacks.ts inline into this binary, giving it a private
+  // projectsMap that is separate from the package's dist/stacks.js module.
+  // Consumer stacks files call registerProject() on the package module, not
+  // the bundled-inline copy. Re-require the consumer stacks config (already
+  // cached by main()) and use the getProject it re-exports — that function
+  // reads from the same module instance that registerProject() wrote to.
+  const stacksConfigPath =
+    process.env.CDK_STACKS_CONFIG ??
+    require('path').join(process.cwd(), 'scripts', 'shared', 'stacks.js');
+  let resolvedGetProject: typeof getProject = getProject;
+  try {
+    const m = require(stacksConfigPath) as { getProject?: typeof getProject };
+    if (typeof m.getProject === 'function') resolvedGetProject = m.getProject;
+  } catch {
+    // Stacks config could not be re-required — fall back to bundled-inline
+    // getProject, which will not find consumer-registered projects
+  }
+
+  const _project = resolvedGetProject(projectId);
   if (!_project) {
     console.error(`Unknown project: ${projectId}`);
     process.exit(1);
