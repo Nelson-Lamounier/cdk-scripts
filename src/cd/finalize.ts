@@ -57,6 +57,27 @@ import {
 } from "../utils/stacks.js";
 
 // =============================================================================
+// Consumer stacks config resolution
+//
+// The consumer repo compiles its stacks config to a JS file that calls
+// registerProject() and re-exports getProject from this package. We need to
+// require() that file so the module-level projectsMap is populated before
+// runPipelineSummary() calls getProject(projectId).
+//
+// CDK_STACKS_CONFIG overrides the default. Otherwise we probe candidate paths
+// in order — covering both "run from repo root" and "run from infra/" layouts.
+// =============================================================================
+function resolveStacksConfigPath(): string {
+  if (process.env.CDK_STACKS_CONFIG) return process.env.CDK_STACKS_CONFIG;
+  const candidates = [
+    join(process.cwd(), 'infra', 'dist', 'scripts', 'shared', 'stacks.js'), // repo root
+    join(process.cwd(), 'dist', 'scripts', 'shared', 'stacks.js'),           // infra/
+    join(process.cwd(), 'scripts', 'shared', 'stacks.js'),                   // legacy
+  ];
+  return candidates.find(existsSync) ?? candidates[0];
+}
+
+// =============================================================================
 // CLI argument parsing
 // =============================================================================
 const { positionals, values: flags } = parseArgs({
@@ -421,9 +442,7 @@ async function runPipelineSummary(): Promise<void> {
   // the bundled-inline copy. Re-require the consumer stacks config (already
   // cached by main()) and use the getProject it re-exports — that function
   // reads from the same module instance that registerProject() wrote to.
-  const stacksConfigPath =
-    process.env.CDK_STACKS_CONFIG ??
-    require('path').join(process.cwd(), 'scripts', 'shared', 'stacks.js');
+  const stacksConfigPath = resolveStacksConfigPath();
   let resolvedGetProject: typeof getProject = getProject;
   try {
     const m = require(stacksConfigPath) as { getProject?: typeof getProject };
@@ -538,11 +557,8 @@ ${stackRows.join("\n")}
 // =============================================================================
 async function main(): Promise<void> {
   // Load consumer stacks config — required for pipeline-summary mode
-  const stacksConfigPath =
-    process.env.CDK_STACKS_CONFIG ??
-    require('path').join(process.cwd(), 'scripts', 'shared', 'stacks.js');
   try {
-    require(stacksConfigPath);
+    require(resolveStacksConfigPath());
   } catch {
     // OK for stack-outputs mode; pipeline-summary will fail on getProject() if absent
   }
